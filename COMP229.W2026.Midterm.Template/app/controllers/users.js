@@ -2,11 +2,24 @@ let UsersModel = require('../models/users');
 
 module.exports.usersList = async function (req, res, next) {
 
-    try {
-        // Retrieves a list of users from the DB and waits for the result.
-        // Add your code here to retrieve the list of users from the database using the UsersModel.        
+     try {
 
-        // If the list is empty, throw an error. Otherwise, return the list as a JSON response.
+        // Retrieve users from database
+        let list = await UsersModel.find();
+
+        // Convert _id to id and remove _id
+        let formattedList = list.map(user => {
+            let obj = user.toObject();
+            obj.id = obj._id;
+            delete obj._id;
+            return obj;
+        });
+          return res.json({
+            success: true,
+            message: "Users list retrieved successfully.",
+            data: formattedList
+        });
+
     } catch (error) {
         console.log(error);
         next(error);
@@ -35,8 +48,18 @@ module.exports.getByID = async function (req, res, next) {
 module.exports.processAdd = async (req, res, next) => {
     try {
  
-        // Builds a new user from the values of the body of the request.
-        // Add your code here to create a new user object using the UsersModel and the data from req.body
+        let user = new UsersModel(req.body);
+        let result = await user.save();
+
+        let obj = result.toObject();
+        obj.id = obj._id;
+        delete obj._id;
+
+        return res.json({
+            success: true,
+            message: "User added successfully.",
+            data: obj
+        });
 
     } catch (error) {
         console.log(error);
